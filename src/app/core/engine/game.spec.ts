@@ -19,11 +19,13 @@ function stateFrom(rows: number[][], overrides: Partial<GameState> = {}): GameSt
     }),
   );
   return {
+    mode: 'classic',
     layoutId: 'test',
     size,
     blocked,
     target: 2048,
     specials: false,
+    powers: { undo: 1, shuffle: 1, remove: 1, swap: 1 },
     tiles,
     score: 0,
     moves: 0,

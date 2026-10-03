@@ -1,59 +1,150 @@
 <main class="game">
+  <nav class="nav">
+    <a class="back" routerLink="/">‹ Modos</a>
+    <span class="mode">{{ store.modeInfo().name }}</span>
+  </nav>
+
   <header class="top">
     <h1 class="logo">2048</h1>
     <div class="scores">
-      <app-score label="Pontos" [value]="store.score()" [gain]="store.lastGain()" />
-      <app-score label="Recorde" [value]="store.best()" />
+      @if (store.mode() === 'puzzle') {
+        <app-score label="Movimentos" [value]="store.movesLeft() ?? 0" />
+      } @else {
+        <app-score label="Pontos" [value]="store.score()" [gain]="store.lastGain()" />
+        <app-score label="Recorde" [value]="store.best()" />
+      }
     </div>
   </header>
 
   <div class="bar">
-    <p class="hint">Junte as peças e chegue ao <strong>{{ store.target() }}!</strong></p>
+    @switch (store.mode()) {
+      @case ('timed') {
+        <p class="clock" [class.low]="(store.timeLeft() ?? 0) <= 15000" role="timer" aria-label="Tempo restante">
+          {{ clock() }}
+          @if (store.moves() === 0) {
+            <small>começa no 1º movimento</small>
+          }
+        </p>
+      }
+      @case ('daily') {
+        <p class="hint">Desafio de <strong>{{ dailyLabel() }}</strong> · meta {{ store.target() }}</p>
+      }
+      @case ('puzzle') {
+        <p class="hint">
+          <strong>{{ store.puzzle()?.name }}</strong> · faça <strong>{{ store.target() }}</strong>
+          <br /><small>{{ store.puzzle()?.hint }}</small>
+        </p>
+      }
+      @case ('zen') {
+        <p class="hint">Sem pressa e sem fim de jogo.</p>
+      }
+      @default {
+        <p class="hint">Junte as peças e chegue ao <strong>{{ store.target() }}!</strong></p>
+      }
+    }
     <div class="actions">
-      <button type="button" class="btn ghost" (click)="openPicker(picker)" aria-haspopup="dialog">
-        {{ store.layout().name }}@if (store.specials()) {<span class="spark" title="Peças especiais"> ✦</span>}
+      @if (configurable()) {
+        <button type="button" class="btn ghost" (click)="openPicker(picker)" aria-haspopup="dialog">
+          {{ store.layout().name }}@if (store.specials()) {<span class="spark" title="Peças especiais"> ✦</span>}
+        </button>
+      }
+      <button type="button" class="btn" (click)="store.restart()">
+        {{ store.mode() === 'puzzle' || store.mode() === 'daily' ? 'Recomeçar' : 'Novo jogo' }}
       </button>
-      <button type="button" class="btn" (click)="store.newGame()">Novo jogo</button>
     </div>
   </div>
+
+  @if (store.mode() === 'timed') {
+    <div class="time-bar" aria-hidden="true">
+      <span [style.width.%]="((store.timeLeft() ?? 0) / 120000) * 100"></span>
+    </div>
+  }
 
   <app-board
     [size]="store.size()"
     [tiles]="store.tiles()"
     [blocked]="store.blocked()"
     [ghostIds]="store.ghostIds()"
+    [targeting]="store.targeting() !== null"
+    [selectedId]="store.targeting()?.first"
     (swipe)="play($event)"
+    (tilePick)="pickTile($event)"
     aria-label="Tabuleiro do jogo"
   >
     @if (store.showWin()) {
       <div class="overlay win" role="dialog" aria-label="Vitória">
-        <p class="title">Você venceu!</p>
-        <div class="actions">
-          <button type="button" class="btn" (click)="store.keepPlaying()">Continuar</button>
-          <button type="button" class="btn ghost" (click)="store.newGame()">Novo jogo</button>
-        </div>
+        @if (store.mode() === 'puzzle') {
+          <p class="title">Nível concluído!</p>
+          <p class="stats">Resolvido em {{ store.moves() }} movimentos</p>
+          <div class="actions">
+            @if (store.nextPuzzle(); as next) {
+              <button type="button" class="btn" (click)="store.start({ mode: 'puzzle', levelId: next.id })">
+                Próximo nível
+              </button>
+            }
+            <a class="btn ghost" routerLink="/puzzles">Níveis</a>
+          </div>
+        } @else {
+          <p class="title">Você venceu!</p>
+          <div class="actions">
+            <button type="button" class="btn" (click)="store.keepPlaying()">Continuar</button>
+            <button type="button" class="btn ghost" (click)="store.restart()">Novo jogo</button>
+          </div>
+        }
       </div>
-    } @else if (store.over()) {
-      <div class="overlay" role="dialog" aria-label="Fim de jogo">
-        <p class="title">Fim de jogo</p>
-        <p class="stats">{{ store.score() }} pontos · {{ store.moves() }} movimentos · maior peça {{ store.maxTile() }}</p>
-        <button type="button" class="btn" (click)="store.newGame()">Tentar novamente</button>
+    } @else if (store.showOver()) {
+      <div class="overlay" role="dialog" [attr.aria-label]="overTitle()">
+        <p class="title">{{ overTitle() }}</p>
+        @if (store.mode() !== 'puzzle') {
+          <p class="stats">{{ store.score() }} pontos · {{ store.moves() }} movimentos · maior peça {{ store.maxTile() }}</p>
+        }
+        @if (store.endReason() !== 'time' && (store.available().undo || store.available().remove || store.available().shuffle || store.available().swap)) {
+          <p class="stats">Ainda há poderes disponíveis abaixo.</p>
+        }
+        <div class="actions">
+          <button type="button" class="btn" (click)="store.restart()">Tentar novamente</button>
+          @if (store.mode() === 'daily') {
+            <button type="button" class="btn ghost" (click)="copyResult()">
+              {{ copied() ? 'Copiado!' : 'Copiar resultado' }}
+            </button>
+          }
+        </div>
       </div>
     }
   </app-board>
 
-  @if (store.specials()) {
+  @if (store.targeting()) {
+    <div class="target-hint" role="status">
+      <span>{{ targetingHint() }}</span>
+      <button type="button" class="btn ghost" (click)="store.cancelTargeting()">Cancelar</button>
+    </div>
+  }
+
+  <app-power-bar
+    [powers]="store.powers()"
+    [available]="store.available()"
+    [active]="store.targeting()?.power ?? null"
+    [moves]="store.moves()"
+    [recharges]="store.mode() !== 'puzzle'"
+    (use)="usePower($event)"
+  />
+
+  @if (store.specials() || (store.mode() === 'puzzle' && store.hasSpecialTiles())) {
     <app-legend />
   }
 
-  <p class="help">Use as <strong>setas</strong>, <strong>WASD</strong> ou deslize. <strong>R</strong> reinicia.</p>
+  <p class="help">
+    Use as <strong>setas</strong>, <strong>WASD</strong> ou deslize. <strong>R</strong> recomeça. Poderes:
+    <strong>U</strong> <strong>T</strong> <strong>X</strong> <strong>E</strong>.
+  </p>
+
   <app-layout-picker
     #picker
     [layouts]="store.layouts"
     [current]="store.layout().id"
-    [best]="store.bestByLayout()"
+    [best]="store.bestScores()"
     [specials]="store.prefs().specials"
-    [bestKey]="bestKey"
+    [bestKey]="pickerKey"
     (specialsChange)="setSpecials($event)"
     (pick)="pickLayout($event)"
     (closed)="pickerOpen.set(false)"

@@ -22,6 +22,9 @@ export interface Tile {
   readonly exploding?: boolean;
 }
 
+export type PowerId = 'undo' | 'shuffle' | 'remove' | 'swap';
+export type Powers = Readonly<Record<PowerId, number>>;
+
 export interface BoardLayout {
   readonly id: string;
   readonly name: string;
@@ -31,16 +34,23 @@ export interface BoardLayout {
   readonly target: number;
 }
 
+export type ModeId = 'classic' | 'timed' | 'daily' | 'puzzle' | 'zen';
+export type EndReason = 'stuck' | 'time' | 'moves';
+
 export interface GameOptions {
   readonly specials: boolean;
+  readonly mode?: ModeId;
+  readonly powers?: Powers;
 }
 
 export interface GameState {
+  readonly mode: ModeId;
   readonly layoutId: string;
   readonly size: number;
   readonly blocked: readonly number[];
   readonly target: number;
   readonly specials: boolean;
+  readonly powers: Powers;
   readonly tiles: readonly Tile[];
   readonly score: number;
   readonly moves: number;
@@ -49,6 +59,14 @@ export interface GameState {
   readonly keepPlaying: boolean;
   readonly nextId: number;
   readonly rngState: number;
+  readonly endReason?: EndReason;
+  /** Timed mode: milliseconds left. */
+  readonly timeLeft?: number;
+  /** Puzzle mode: moves allowed. */
+  readonly moveLimit?: number;
+  readonly levelId?: string;
+  /** Daily mode: YYYY-MM-DD of the challenge. */
+  readonly date?: string;
 }
 
 export interface MoveResult {

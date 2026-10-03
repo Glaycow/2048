@@ -1,0 +1,34 @@
+<main class="puzzles">
+  <a class="back" routerLink="/">‹ Modos</a>
+  <h1>Puzzles</h1>
+  <p class="intro">Alcance a peça-meta antes que os movimentos acabem. Cada nível libera o próximo.</p>
+
+  <ol class="levels">
+    @for (item of levels(); track item.level.id; let i = $index) {
+      <li>
+        <button
+          type="button"
+          class="level"
+          [class.done]="item.best !== undefined"
+          [disabled]="item.locked"
+          (click)="play(item.level.id)"
+        >
+          <span class="num">{{ i + 1 }}</span>
+          <span class="text">
+            <strong>{{ item.level.name }}</strong>
+            <small>
+              @if (item.locked) {
+                Bloqueado
+              } @else {
+                Faça {{ item.level.goal }} em {{ item.level.moveLimit }} movimentos
+              }
+            </small>
+          </span>
+          @if (item.best !== undefined) {
+            <span class="badge" [attr.aria-label]="'Resolvido em ' + item.best + ' movimentos'">✓ {{ item.best }}</span>
+          }
+        </button>
+      </li>
+    }
+  </ol>
+</main>

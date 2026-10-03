@@ -1,5 +1,6 @@
 import { isBlocked, spawnTile, toGrid } from './board';
-import { combine, isStatic, tick } from './specials';
+import { INITIAL_POWERS, recharge } from './powers';
+import { combine, isNumber, isStatic, tick } from './specials';
 import {
   BoardLayout,
   Direction,
@@ -15,18 +16,22 @@ export function createGame(
   seed: number,
   options: GameOptions = { specials: false },
 ): GameState {
+  const mode = options.mode ?? 'classic';
   const empty: GameState = {
+    mode,
     layoutId: layout.id,
     size: layout.size,
     blocked: layout.blocked,
     target: layout.target,
     specials: options.specials,
+    powers: options.powers ?? INITIAL_POWERS,
     tiles: [],
     score: 0,
     moves: 0,
     won: false,
     over: false,
-    keepPlaying: false,
+    // Only classic, daily and puzzle stop at the target tile.
+    keepPlaying: mode === 'timed' || mode === 'zen',
     nextId: 1,
     rngState: seed,
   };
@@ -125,6 +130,46 @@ export function canMove(state: GameState): boolean {
   return DIRECTIONS.some((direction) => slide(state, direction).moved);
 }
 
+/**
+ * Applies end-of-turn rules: game over when stuck, the puzzle move limit,
+ * and zen relief (clears the smallest tiles instead of ending).
+ */
+export function finalize(state: GameState): { state: GameState; removed: Tile[] } {
+  let next = state;
+  const removed: Tile[] = [];
+
+  if (!canMove(next)) {
+    if (next.mode === 'zen') {
+      const numbers = next.tiles.filter(isNumber);
+      const smallest = Math.min(...numbers.map((t) => t.value));
+      const keep = next.tiles.filter((t) => {
+        // With no number tiles left, clear the specials instead.
+        const clear = numbers.length === 0 || (isNumber(t) && t.value === smallest);
+        if (clear) removed.push({ ...t, exploding: true });
+        return !clear;
+      });
+      next = { ...next, tiles: keep };
+    } else {
+      return { state: { ...next, over: true, endReason: 'stuck' }, removed };
+    }
+  }
+
+  if (next.mode === 'puzzle' && !next.won && next.moveLimit !== undefined && next.moves >= next.moveLimit) {
+    return { state: { ...next, over: true, endReason: 'moves' }, removed };
+  }
+
+  return { state: { ...next, over: false, endReason: undefined }, removed };
+}
+
+/** Timed mode: counts the clock down, ending the game at zero. */
+export function elapse(state: GameState, ms: number): GameState {
+  if (state.mode !== 'timed' || state.over || state.timeLeft === undefined) return state;
+  const timeLeft = Math.max(0, state.timeLeft - ms);
+  return timeLeft > 0
+    ? { ...state, timeLeft }
+    : { ...state, timeLeft, over: true, endReason: 'time' };
+}
+
 export function move(state: GameState, direction: Direction): MoveResult {
   const slid = slide(state, direction);
   if (!slid.moved) return { state, moved: false, gained: 0, consumed: [], destroyed: [] };
@@ -156,16 +201,17 @@ export function move(state: GameState, direction: Direction): MoveResult {
     nextId: slid.nextId,
     score: state.score + slid.gained,
     moves: state.moves + 1,
+    powers: recharge(state.powers, state.moves + 1),
     won: state.won || tiles.some((t) => t.value >= state.target),
   };
-  const next = spawnTile(afterMove);
+  const final = finalize(spawnTile(afterMove));
 
   return {
-    state: { ...next, over: !canMove(next) },
+    state: final.state,
     moved: true,
     gained: slid.gained,
     consumed: slid.consumed,
-    destroyed,
+    destroyed: [...destroyed, ...final.removed],
   };
 }
 
