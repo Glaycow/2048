@@ -1,6 +1,6 @@
 import { Tile } from './types';
 
-export const SPECIALS_FROM_MOVE = 8;
+export const SPECIALS_FROM_MOVE = 4;
 export const BOMB_FUSE = 5;
 export const ICE_TURNS = 3;
 export const MAX_STONES = 2;

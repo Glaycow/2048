@@ -44,8 +44,24 @@
     }
     <div class="actions">
       @if (configurable()) {
-        <button type="button" class="btn ghost" (click)="openPicker(picker)" aria-haspopup="dialog">
-          {{ store.layout().name }}@if (store.specials()) {<span class="spark" title="Peças especiais"> ✦</span>}
+        <button
+          type="button"
+          class="btn ghost toggle"
+          [class.on]="store.specials()"
+          [attr.aria-pressed]="store.specials()"
+          title="Bomba, gelo, multiplicador e pedra"
+          (click)="toggleSpecials()"
+        >
+          ✦ Peças especiais
+        </button>
+        <button
+          type="button"
+          class="btn ghost"
+          title="Escolher tabuleiro"
+          aria-haspopup="dialog"
+          (click)="openPicker(picker)"
+        >
+          ⚙ {{ store.layout().name }}
         </button>
       }
       <button type="button" class="btn" (click)="store.restart()">
@@ -130,7 +146,7 @@
   />
 
   @if (store.specials() || (store.mode() === 'puzzle' && store.hasSpecialTiles())) {
-    <app-legend />
+    <app-legend [moves]="store.mode() === 'puzzle' ? 999 : store.moves()" />
   }
 
   <p class="help">
