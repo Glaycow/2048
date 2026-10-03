@@ -18,7 +18,7 @@ export interface Tile {
   readonly frozen?: number;
   readonly isNew?: boolean;
   readonly merged?: boolean;
-  /** Removed by an explosion or broken stone (animation only). */
+  /** Removed by an explosion, a power or a broken stone (animation only). */
   readonly exploding?: boolean;
 }
 
@@ -41,6 +41,12 @@ export interface GameOptions {
   readonly specials: boolean;
   readonly mode?: ModeId;
   readonly powers?: Powers;
+}
+
+export interface SpawnInfo {
+  readonly row: number;
+  readonly col: number;
+  readonly value: number;
 }
 
 export interface GameState {
@@ -67,6 +73,10 @@ export interface GameState {
   readonly levelId?: string;
   /** Daily mode: YYYY-MM-DD of the challenge. */
   readonly date?: string;
+  /** Cell and value of the most recent spawn. */
+  readonly lastSpawn?: SpawnInfo;
+  /** Set by undo: the next spawn must not repeat this cell or value. */
+  readonly avoidSpawn?: SpawnInfo;
 }
 
 export interface MoveResult {
@@ -75,6 +85,6 @@ export interface MoveResult {
   readonly gained: number;
   /** Tiles absorbed by a merge, positioned at the merge cell (for animation). */
   readonly consumed: readonly Tile[];
-  /** Tiles destroyed by bombs or broken stones (for animation). */
+  /** Tiles destroyed by bombs, broken stones or zen relief (for animation). */
   readonly destroyed: readonly Tile[];
 }

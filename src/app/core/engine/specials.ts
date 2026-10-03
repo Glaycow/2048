@@ -1,7 +1,9 @@
 import { Tile } from './types';
 
-export const SPECIALS_FROM_MOVE = 8;
+export const SPECIALS_FROM_MOVE = 4;
 export const BOMB_FUSE = 5;
+/** Bombs only destroy number tiles below this value. */
+export const BOMB_MAX_VALUE = 64;
 export const ICE_TURNS = 3;
 export const MAX_STONES = 2;
 
@@ -9,6 +11,10 @@ export const isNumber = (tile: Tile): boolean => !tile.kind || tile.kind === 'nu
 
 /** Tiles that stay in place and split lines like walls. */
 export const isStatic = (tile: Tile): boolean => tile.kind === 'stone' || (tile.frozen ?? 0) > 0;
+
+/** Whether a bomb blast removes `tile`: small numbers, stones and other bombs. */
+export const blastable = (tile: Tile): boolean =>
+  isNumber(tile) ? tile.value < BOMB_MAX_VALUE : tile.kind !== 'multiplier';
 
 /** Value produced when `a` and `b` meet, or null if they do not combine. */
 export function combine(a: Tile, b: Tile): number | null {

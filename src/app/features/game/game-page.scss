@@ -176,3 +176,9 @@
     padding: 0.45rem 0.9rem;
   }
 }
+
+.toggle.on {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: none;
+}

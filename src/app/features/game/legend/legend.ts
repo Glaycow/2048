@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { BOMB_FUSE, ICE_TURNS, Tile } from '../../../core/engine';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { BOMB_FUSE, BOMB_MAX_VALUE, ICE_TURNS, SPECIALS_FROM_MOVE, Tile } from '../../../core/engine';
 import { TileComponent } from '../tile/tile';
 
 interface Entry {
@@ -14,6 +14,9 @@ interface Entry {
   imports: [TileComponent],
   template: `
     <h2 class="sr-only">Peças especiais</h2>
+    @if (moves() < startsAt) {
+      <p class="soon">As peças especiais começam a aparecer a partir do {{ startsAt }}º movimento.</p>
+    }
     <ul>
       @for (entry of entries; track entry.name) {
         <li>
@@ -42,6 +45,12 @@ interface Entry {
     strong {
       color: var(--fg);
     }
+    .soon {
+      margin: 0 0 0.6rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
     .sample {
       --cell: 2.4rem;
       --gap: 0.5rem;
@@ -54,11 +63,14 @@ interface Entry {
   `,
 })
 export class LegendComponent {
+  readonly moves = input(999);
+  protected readonly startsAt = SPECIALS_FROM_MOVE;
+
   protected readonly entries: readonly Entry[] = [
     {
       tile: { id: -1, value: 0, row: 0, col: 0, kind: 'bomb', fuse: BOMB_FUSE },
       name: 'Bomba',
-      text: `explode após ${BOMB_FUSE} movimentos e limpa as peças ao redor.`,
+      text: `explode após ${BOMB_FUSE} movimentos e remove as peças ao redor menores que ${BOMB_MAX_VALUE}.`,
     },
     {
       tile: { id: -2, value: 8, row: 0, col: 0, frozen: ICE_TURNS },

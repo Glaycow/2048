@@ -293,6 +293,32 @@ describe('special tiles', () => {
     expect(result.state.tiles.some((t) => t.value === 16)).toBe(true);
   });
 
+  it('bomb only removes numbers below 64 (and stones), keeping big tiles and multipliers', () => {
+    const state = {
+      ...empty4(),
+      tiles: [
+        at(1, 1, { kind: 'bomb', fuse: 1 }),
+        at(0, 0, { value: 32, frozen: 3 }),
+        at(0, 1, { value: 64, frozen: 3 }),
+        at(0, 2, { value: 128, frozen: 3 }),
+        at(1, 0, { kind: 'stone' }),
+        at(1, 2, { kind: 'multiplier', frozen: 3 }),
+        at(2, 1, { value: 16, frozen: 3 }),
+        at(3, 3, { value: 2 }),
+      ],
+    };
+    // Only the 2 in the corner moves; everything around the bomb is frozen or fixed.
+    const result = move(state, 'left');
+    const left = (v: number) => result.state.tiles.some((t) => t.value === v && !t.isNew);
+    expect(find(result.state, 'bomb')).toBeUndefined();
+    expect(left(32)).toBe(false);
+    expect(left(16)).toBe(false);
+    expect(find(result.state, 'stone')).toBeUndefined();
+    expect(left(64)).toBe(true);
+    expect(left(128)).toBe(true);
+    expect(find(result.state, 'multiplier')).toBeDefined();
+  });
+
   it('bomb fuse counts down', () => {
     const state = { ...empty4(), tiles: [at(0, 3, { kind: 'bomb', fuse: BOMB_FUSE })] };
     expect(find(move(state, 'left').state, 'bomb')?.fuse).toBe(BOMB_FUSE - 1);

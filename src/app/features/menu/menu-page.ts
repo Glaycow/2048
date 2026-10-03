@@ -18,7 +18,7 @@ export class MenuPage {
   protected readonly dailyBest = computed(() => this.store.bestScores()[`diario:${todayKey()}`] ?? 0);
 
   protected readonly details = computed<Record<ModeId, string>>(() => ({
-    classic: 'Tabuleiros de 3×3 a 8×8 e formatos especiais',
+    classic: 'Tabuleiros variados e peças especiais opcionais',
     timed: 'Recorde e tabuleiro à sua escolha',
     daily: this.dailyBest() ? `Seu melhor hoje: ${this.dailyBest()}` : 'Ainda não jogado hoje',
     puzzle: `${this.solved()} de ${PUZZLES.length} resolvidos`,

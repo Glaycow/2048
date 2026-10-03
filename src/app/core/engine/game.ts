@@ -1,6 +1,6 @@
 import { isBlocked, spawnTile, toGrid } from './board';
 import { INITIAL_POWERS, recharge } from './powers';
-import { combine, isNumber, isStatic, tick } from './specials';
+import { blastable, combine, isNumber, isStatic, tick } from './specials';
 import {
   BoardLayout,
   Direction,
@@ -189,7 +189,7 @@ export function move(state: GameState, direction: Direction): MoveResult {
   const bombs = tiles.filter((t) => t.kind === 'bomb' && (t.fuse ?? 0) <= 0);
   if (bombs.length > 0) {
     tiles = tiles.filter((t) => {
-      const hit = bombs.some((bomb) => inBlast(t, bomb));
+      const hit = blastable(t) && bombs.some((bomb) => inBlast(t, bomb));
       if (hit) destroy(t);
       return !hit;
     });

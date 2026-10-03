@@ -184,6 +184,12 @@ export class GamePage {
     }
   }
 
+  protected toggleSpecials(): void {
+    const next = !this.store.specials();
+    if (this.store.hasProgress() && !confirm('Isso inicia um novo jogo. Continuar?')) return;
+    this.setSpecials(next);
+  }
+
   protected setSpecials(specials: boolean): void {
     this.store.setSpecials(specials);
     this.announcement = specials ? 'Peças especiais ativadas.' : 'Peças especiais desativadas.';

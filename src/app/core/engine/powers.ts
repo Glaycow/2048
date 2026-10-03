@@ -86,11 +86,18 @@ export function swapTiles(state: GameState, a: number, b: number): GameState {
 }
 
 /** Restores `previous`, keeping the current charges minus one undo. */
+/**
+ * Restores `previous`, keeping the current charges minus one undo. The random
+ * stream keeps going from `current` and the tile spawned by the undone move is
+ * marked so the next spawn lands elsewhere with a different value.
+ */
 export function undoTo(current: GameState, previous: GameState): GameState {
   if (!canUse(current, 'undo')) return current;
   return {
     ...previous,
     tiles: previous.tiles.map(clean),
     powers: { ...current.powers, undo: current.powers.undo - 1 },
+    rngState: current.rngState,
+    avoidSpawn: current.lastSpawn,
   };
 }
