@@ -1,4 +1,5 @@
 import { isBlocked, spawnTile, toGrid } from './board';
+import { INITIAL_POWERS, recharge } from './powers';
 import { combine, isStatic, tick } from './specials';
 import {
   BoardLayout,
@@ -21,6 +22,7 @@ export function createGame(
     blocked: layout.blocked,
     target: layout.target,
     specials: options.specials,
+    powers: INITIAL_POWERS,
     tiles: [],
     score: 0,
     moves: 0,
@@ -156,6 +158,7 @@ export function move(state: GameState, direction: Direction): MoveResult {
     nextId: slid.nextId,
     score: state.score + slid.gained,
     moves: state.moves + 1,
+    powers: recharge(state.powers, state.moves + 1),
     won: state.won || tiles.some((t) => t.value >= state.target),
   };
   const next = spawnTile(afterMove);

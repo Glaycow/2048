@@ -120,3 +120,18 @@
 .spark {
   color: var(--accent);
 }
+
+.target-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.6rem 0.6rem 1rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  font-weight: 700;
+
+  .btn {
+    padding: 0.45rem 0.9rem;
+  }
+}

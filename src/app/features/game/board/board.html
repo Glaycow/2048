@@ -6,7 +6,12 @@
       }
     </div>
     @for (tile of tiles(); track tile.id) {
-      <app-tile [tile]="tile" [ghost]="ghostIds().has(tile.id)" />
+      <app-tile
+        [tile]="tile"
+        [ghost]="ghostIds().has(tile.id)"
+        [class.selected]="tile.id === selectedId()"
+        (click)="pick(tile)"
+      />
     }
     <ng-content />
   </div>

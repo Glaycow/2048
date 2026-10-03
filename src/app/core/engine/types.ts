@@ -22,6 +22,9 @@ export interface Tile {
   readonly exploding?: boolean;
 }
 
+export type PowerId = 'undo' | 'shuffle' | 'remove' | 'swap';
+export type Powers = Readonly<Record<PowerId, number>>;
+
 export interface BoardLayout {
   readonly id: string;
   readonly name: string;
@@ -41,6 +44,7 @@ export interface GameState {
   readonly blocked: readonly number[];
   readonly target: number;
   readonly specials: boolean;
+  readonly powers: Powers;
   readonly tiles: readonly Tile[];
   readonly score: number;
   readonly moves: number;

@@ -22,7 +22,10 @@
     [tiles]="store.tiles()"
     [blocked]="store.blocked()"
     [ghostIds]="store.ghostIds()"
+    [targeting]="store.targeting() !== null"
+    [selectedId]="store.targeting()?.first"
     (swipe)="play($event)"
+    (tilePick)="pickTile($event)"
     aria-label="Tabuleiro do jogo"
   >
     @if (store.showWin()) {
@@ -33,20 +36,38 @@
           <button type="button" class="btn ghost" (click)="store.newGame()">Novo jogo</button>
         </div>
       </div>
-    } @else if (store.over()) {
+    } @else if (store.showOver()) {
       <div class="overlay" role="dialog" aria-label="Fim de jogo">
         <p class="title">Fim de jogo</p>
         <p class="stats">{{ store.score() }} pontos · {{ store.moves() }} movimentos · maior peça {{ store.maxTile() }}</p>
+        @if (store.available().undo || store.available().remove || store.available().shuffle || store.available().swap) {
+          <p class="stats">Ainda há poderes disponíveis abaixo.</p>
+        }
         <button type="button" class="btn" (click)="store.newGame()">Tentar novamente</button>
       </div>
     }
   </app-board>
 
+  @if (store.targeting()) {
+    <div class="target-hint" role="status">
+      <span>{{ targetingHint() }}</span>
+      <button type="button" class="btn ghost" (click)="store.cancelTargeting()">Cancelar</button>
+    </div>
+  }
+
+  <app-power-bar
+    [powers]="store.powers()"
+    [available]="store.available()"
+    [active]="store.targeting()?.power ?? null"
+    [moves]="store.moves()"
+    (use)="usePower($event)"
+  />
+
   @if (store.specials()) {
     <app-legend />
   }
 
-  <p class="help">Use as <strong>setas</strong>, <strong>WASD</strong> ou deslize. <strong>R</strong> reinicia.</p>
+  <p class="help">Use as <strong>setas</strong>, <strong>WASD</strong> ou deslize. <strong>R</strong> reinicia. Poderes: <strong>U</strong> <strong>T</strong> <strong>X</strong> <strong>E</strong>.</p>
   <app-layout-picker
     #picker
     [layouts]="store.layouts"

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DEFAULT_LAYOUT_ID, GameState, getLayout } from '../engine';
+import { DEFAULT_LAYOUT_ID, GameState, getLayout, INITIAL_POWERS } from '../engine';
 
 const STATE_KEY = 'g2048.state';
 const BEST_KEY = 'g2048.best';
@@ -28,6 +28,7 @@ export class PersistenceService {
         blocked: layout.blocked,
         target: layout.target,
         specials: false,
+        powers: INITIAL_POWERS,
         ...state,
       } as GameState;
     } catch {
