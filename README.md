@@ -8,7 +8,7 @@
 
 - **Modos:** Clássico, Contra o tempo, Desafio diário, Puzzle e Zen
 - **Tabuleiros:** 3×3 a 8×8, Cruz, Losango, Anel, Pilares, Ampulheta
-- **Peças especiais:** gelo, multiplicador e pedra
+- **Peças especiais:** bomba, gelo, multiplicador e pedra
 - **Poderes:** desfazer, trocar, remover e embaralhar
 
 ## Desenvolvimento

@@ -47,7 +47,7 @@ export interface PuzzleLevel {
   readonly layoutId: string;
   /**
    * One string per row, space separated: `.` empty, `#` blocked, `16` number,
-   * `16*` frozen number, `S` stone, `M` multiplier.
+   * `16*` frozen number, `S` stone, `M` multiplier, `B3` bomb with fuse 3.
    */
   readonly grid: readonly string[];
   readonly goal: number;
@@ -126,6 +126,16 @@ export const PUZZLES: readonly PuzzleLevel[] = [
     moveLimit: 7,
     seed: 79,
   },
+  {
+    id: 'p8',
+    name: 'Contagem regressiva',
+    hint: 'Deixe a bomba abrir espaço.',
+    layoutId: 'classic-4',
+    grid: ['8 4 2 64', '16 . 8 16', '64 . B2 .', '2 16 . 8'],
+    goal: 128,
+    moveLimit: 5,
+    seed: 83,
+  },
 ];
 
 export function getPuzzle(id: string | undefined): PuzzleLevel | undefined {
@@ -136,6 +146,7 @@ function parseToken(token: string, id: number, row: number, col: number): Tile |
   if (token === '.' || token === '#') return null;
   if (token === 'S') return { id, value: 0, row, col, kind: 'stone' };
   if (token === 'M') return { id, value: 0, row, col, kind: 'multiplier' };
+  if (token.startsWith('B')) return { id, value: 0, row, col, kind: 'bomb', fuse: Number(token.slice(1)) };
   if (token.endsWith('*')) return { id, value: Number(token.slice(0, -1)), row, col, frozen: 2 };
   return { id, value: Number(token), row, col };
 }

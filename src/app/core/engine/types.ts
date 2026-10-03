@@ -3,7 +3,7 @@ export type Direction = 'up' | 'down' | 'left' | 'right';
 export const DIRECTIONS: readonly Direction[] = ['up', 'down', 'left', 'right'];
 
 /** `number` is a regular tile; the others only appear with special tiles enabled. */
-export type TileKind = 'number' | 'multiplier' | 'stone';
+export type TileKind = 'number' | 'bomb' | 'multiplier' | 'stone';
 
 export interface Tile {
   readonly id: number;
@@ -12,11 +12,13 @@ export interface Tile {
   readonly row: number;
   readonly col: number;
   readonly kind?: TileKind;
+  /** Bomb: moves left before it explodes. */
+  readonly fuse?: number;
   /** Ice: moves left while frozen in place. */
   readonly frozen?: number;
   readonly isNew?: boolean;
   readonly merged?: boolean;
-  /** Removed by a power or a broken stone (animation only). */
+  /** Removed by an explosion, a power or a broken stone (animation only). */
   readonly exploding?: boolean;
 }
 
@@ -83,6 +85,6 @@ export interface MoveResult {
   readonly gained: number;
   /** Tiles absorbed by a merge, positioned at the merge cell (for animation). */
   readonly consumed: readonly Tile[];
-  /** Tiles destroyed by broken stones or zen relief (for animation). */
+  /** Tiles destroyed by bombs, broken stones or zen relief (for animation). */
   readonly destroyed: readonly Tile[];
 }

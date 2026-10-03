@@ -1,6 +1,6 @@
 import { isBlocked, spawnTile, toGrid } from './board';
 import { INITIAL_POWERS, recharge } from './powers';
-import { combine, isNumber, isStatic, tick } from './specials';
+import { blastable, combine, isNumber, isStatic, tick } from './specials';
 import {
   BoardLayout,
   Direction,
@@ -123,6 +123,8 @@ function slide(state: GameState, direction: Direction): SlideResult {
 const touches = (t: Tile, [row, col]: [number, number]) =>
   Math.abs(t.row - row) + Math.abs(t.col - col) === 1;
 
+const inBlast = (t: Tile, bomb: Tile) =>
+  Math.abs(t.row - bomb.row) <= 1 && Math.abs(t.col - bomb.col) <= 1;
 
 export function canMove(state: GameState): boolean {
   return DIRECTIONS.some((direction) => slide(state, direction).moved);
@@ -183,6 +185,15 @@ export function move(state: GameState, direction: Direction): MoveResult {
   });
 
   tiles = tiles.map(tick);
+
+  const bombs = tiles.filter((t) => t.kind === 'bomb' && (t.fuse ?? 0) <= 0);
+  if (bombs.length > 0) {
+    tiles = tiles.filter((t) => {
+      const hit = blastable(t) && bombs.some((bomb) => inBlast(t, bomb));
+      if (hit) destroy(t);
+      return !hit;
+    });
+  }
 
   const afterMove: GameState = {
     ...state,

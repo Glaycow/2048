@@ -1,5 +1,14 @@
 <div class="face" aria-hidden="true">
   @switch (kind()) {
+    @case ('bomb') {
+      <svg class="icon" viewBox="0 0 32 32">
+        <circle cx="14" cy="18" r="10" fill="currentColor" />
+        <rect x="18" y="5" width="6" height="6" rx="1.5" transform="rotate(45 21 8)" fill="currentColor" />
+        <path d="M23 6c2-3 5-3 6-1" fill="none" stroke="var(--spark)" stroke-width="2" stroke-linecap="round" />
+        <circle cx="10" cy="14" r="2.5" fill="#fff" opacity=".35" />
+      </svg>
+      <span class="badge">{{ tile().fuse }}</span>
+    }
     @case ('multiplier') {
       <span class="mult">×2</span>
     }
