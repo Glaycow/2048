@@ -2,8 +2,6 @@
 
 2048 em Angular 22 (zoneless, signals) com tabuleiros variados, peças especiais, poderes e modos de jogo. Funciona offline (PWA).
 
-**Jogar:** https://glaycow.github.io/2048/
-
 ## Recursos
 
 - **Modos:** Clássico, Contra o tempo, Desafio diário, Puzzle e Zen
@@ -33,4 +31,6 @@ src/app/features/      menu, jogo e puzzles
 
 ## Deploy
 
-O workflow `.github/workflows/deploy.yml` testa, gera o build e publica no GitHub Pages a cada push na `main`.
+Vercel, configurado em `vercel.json` (build `npm run build`, saída `dist/game-2048/browser`, rewrites para as rotas do Angular e cache do service worker).
+
+O workflow `.github/workflows/ci.yml` roda testes e build em cada push e PR.
