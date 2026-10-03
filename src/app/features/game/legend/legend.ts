@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { BOMB_FUSE, ICE_TURNS, SPECIALS_FROM_MOVE, Tile } from '../../../core/engine';
+import { ICE_TURNS, SPECIALS_FROM_MOVE, Tile } from '../../../core/engine';
 import { TileComponent } from '../tile/tile';
 
 interface Entry {
@@ -67,11 +67,6 @@ export class LegendComponent {
   protected readonly startsAt = SPECIALS_FROM_MOVE;
 
   protected readonly entries: readonly Entry[] = [
-    {
-      tile: { id: -1, value: 0, row: 0, col: 0, kind: 'bomb', fuse: BOMB_FUSE },
-      name: 'Bomba',
-      text: `explode após ${BOMB_FUSE} movimentos e limpa as peças ao redor.`,
-    },
     {
       tile: { id: -2, value: 8, row: 0, col: 0, frozen: ICE_TURNS },
       name: 'Gelo',

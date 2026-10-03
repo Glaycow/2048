@@ -30,8 +30,6 @@ export class TileComponent {
   protected readonly label = computed(() => {
     const t = this.tile();
     switch (this.kind()) {
-      case 'bomb':
-        return `Bomba, explode em ${t.fuse}`;
       case 'multiplier':
         return 'Multiplicador ×2';
       case 'stone':

@@ -85,15 +85,6 @@
 
 /* Special tiles */
 
-:host([data-kind='bomb']) {
-  --tile-bg: var(--bomb-bg);
-  --tile-fg: var(--bomb-fg);
-}
-
-:host([data-kind='bomb']) .face {
-  animation: tremble 1.4s ease-in-out infinite;
-}
-
 :host([data-kind='multiplier']) {
   --tile-bg: var(--mult-bg);
   --tile-fg: var(--fg-light);
@@ -166,13 +157,6 @@
 
 :host(.exploding) .face {
   animation: blast 420ms ease-out forwards;
-}
-
-@keyframes tremble {
-  0%, 80%, 100% { transform: rotate(0); }
-  85% { transform: rotate(-4deg); }
-  90% { transform: rotate(4deg); }
-  95% { transform: rotate(-2deg); }
 }
 
 @keyframes blast {

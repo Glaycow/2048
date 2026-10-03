@@ -108,7 +108,46 @@ describe('powers', () => {
     const before = stateFrom([[0, 2], [0, 0]]);
     const after = { ...move(before, 'left').state, powers: { undo: 2, shuffle: 3, remove: 0, swap: 1 } };
     const restored = undoTo(after, before);
-    expect(restored.tiles).toEqual(before.tiles);
+    expect(restored.tiles.map((t) => t.id)).toEqual(before.tiles.map((t) => t.id));
     expect(restored.powers).toEqual({ undo: 1, shuffle: 3, remove: 0, swap: 1 });
+  });
+
+  it('after undo, repeating the move never spawns at the same cell or with the same value', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const before = stateFrom(
+        [
+          [2, 0, 0, 0],
+          [0, 0, 4, 0],
+          [0, 0, 0, 0],
+          [8, 0, 0, 0],
+        ],
+        { rngState: seed, powers: { ...INITIAL_POWERS, undo: 3 } },
+      );
+      const first = move(before, 'right').state;
+      const spawned = first.tiles.find((t) => t.isNew)!;
+      const again = move(undoTo(first, before), 'right').state;
+      const respawned = again.tiles.find((t) => t.isNew)!;
+      expect([respawned.row, respawned.col]).not.toEqual([spawned.row, spawned.col]);
+      expect(respawned.value).not.toBe(spawned.value);
+      expect(again.avoidSpawn).toBeUndefined();
+    }
+  });
+
+  it('two undos in a row also avoid the earlier spawn', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      const s0 = stateFrom([[2, 0, 0, 0], [0, 0, 4, 0], [0, 0, 0, 0], [8, 0, 0, 0]], {
+        rngState: seed,
+        powers: { ...INITIAL_POWERS, undo: 3 },
+      });
+      const s1 = move(s0, 'right').state;
+      const s2 = move(s1, 'left').state;
+      const back1 = undoTo(s2, s1);
+      const back0 = undoTo(back1, s0);
+      const again = move(back0, 'right').state;
+      const first = s1.lastSpawn!;
+      const respawned = again.lastSpawn!;
+      expect([respawned.row, respawned.col]).not.toEqual([first.row, first.col]);
+      expect(respawned.value).not.toBe(first.value);
+    }
   });
 });

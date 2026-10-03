@@ -4,7 +4,7 @@ import { DIRECTIONS, GameState } from './types';
 
 const boardKey = (s: GameState) =>
   s.tiles
-    .map((t) => `${t.row},${t.col},${t.kind ?? ''}${t.value},${t.fuse ?? ''},${t.frozen ?? ''}`)
+    .map((t) => `${t.row},${t.col},${t.kind ?? ''}${t.value},${t.frozen ?? ''}`)
     .sort()
     .join('|') + `#${s.moves}`;
 

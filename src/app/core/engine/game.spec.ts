@@ -2,7 +2,7 @@ import { emptyCells, spawnTile } from './board';
 import { canMove, createGame, move } from './game';
 import { getLayout, LAYOUTS } from './layouts';
 import { nextRandom } from './rng';
-import { BOMB_FUSE, combine, ICE_TURNS, specialize } from './specials';
+import { combine, ICE_TURNS, specialize } from './specials';
 import { Direction, GameState, Tile } from './types';
 
 /** -1 marks a blocked cell. */
@@ -229,7 +229,7 @@ describe('special tiles', () => {
 
   it('combines only compatible kinds', () => {
     expect(combine(at(0, 0, { value: 4 }), at(0, 1, { kind: 'multiplier' }))).toBe(8);
-    expect(combine(at(0, 0, { kind: 'bomb' }), at(0, 1, { kind: 'bomb' }))).toBeNull();
+    expect(combine(at(0, 0, { kind: 'stone' }), at(0, 1, { value: 2 }))).toBeNull();
     expect(combine(at(0, 0, { kind: 'multiplier' }), at(0, 1, { kind: 'multiplier' }))).toBeNull();
   });
 
@@ -275,34 +275,11 @@ describe('special tiles', () => {
     expect(result.state.tiles.filter((t) => t.value === 2 && !t.isNew).length).toBe(2);
   });
 
-  it('bomb explodes when its fuse runs out, clearing neighbours', () => {
-    const state = {
-      ...empty4(),
-      tiles: [
-        at(1, 0, { kind: 'bomb', fuse: 1 }),
-        at(0, 0, { value: 8 }),
-        at(2, 0, { kind: 'stone' }),
-        at(3, 0, { value: 16 }),
-        at(1, 3, { value: 2 }),
-      ],
-    };
-    const result = move(state, 'right');
-    // Bomb slid next to the 2 at (1, 2) and exploded there.
-    expect(find(result.state, 'bomb')).toBeUndefined();
-    expect(result.destroyed.some((t) => t.kind === 'bomb')).toBe(true);
-    expect(result.state.tiles.some((t) => t.value === 16)).toBe(true);
-  });
-
-  it('bomb fuse counts down', () => {
-    const state = { ...empty4(), tiles: [at(0, 3, { kind: 'bomb', fuse: BOMB_FUSE })] };
-    expect(find(move(state, 'left').state, 'bomb')?.fuse).toBe(BOMB_FUSE - 1);
-  });
-
   it('specialize respects limits', () => {
     const base = at(0, 0, { value: 2 });
-    expect(specialize(base, 0.01, []).kind).toBe('bomb');
-    expect(specialize(base, 0.01, [at(1, 1, { kind: 'bomb' })]).kind).toBe('multiplier');
-    expect(specialize(base, 0.12, []).frozen).toBe(ICE_TURNS);
+    expect(specialize(base, 0.01, []).kind).toBe('multiplier');
+    expect(specialize(base, 0.01, [at(1, 1, { kind: 'multiplier' })]).kind).toBe('stone');
+    expect(specialize(base, 0.1, []).frozen).toBe(ICE_TURNS);
     expect(specialize(base, 0.5, [])).toBe(base);
   });
 

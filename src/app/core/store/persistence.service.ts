@@ -32,6 +32,8 @@ export class PersistenceService {
         specials: false,
         powers: INITIAL_POWERS,
         ...state,
+        // Bombs were removed from the game.
+        tiles: state.tiles.filter((t) => (t.kind as string) !== 'bomb'),
       } as GameState;
     } catch {
       return null;
