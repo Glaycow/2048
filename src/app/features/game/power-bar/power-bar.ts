@@ -19,6 +19,7 @@ export class PowerBarComponent {
   readonly available = input.required<Readonly<Record<PowerId, boolean>>>();
   readonly active = input<PowerId | null>(null);
   readonly moves = input(0);
+  readonly recharges = input(true);
   readonly use = output<PowerId>();
 
   protected readonly ids = POWER_IDS;

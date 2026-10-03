@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  DOCUMENT,
+  inject,
+  signal,
+} from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Direction, PowerId } from '../../core/engine';
 import { bestKey, GameStore } from '../../core/store/game.store';
 import { BoardComponent } from './board/board';
@@ -46,7 +55,14 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 @Component({
   selector: 'app-game-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [BoardComponent, ScoreComponent, LayoutPickerComponent, LegendComponent, PowerBarComponent],
+  imports: [
+    RouterLink,
+    BoardComponent,
+    ScoreComponent,
+    LayoutPickerComponent,
+    LegendComponent,
+    PowerBarComponent,
+  ],
   templateUrl: './game-page.html',
   styleUrl: './game-page.scss',
   host: {
@@ -55,9 +71,54 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 })
 export class GamePage {
   protected readonly store = inject(GameStore);
+  private readonly document = inject(DOCUMENT);
   protected readonly pickerOpen = signal(false);
-  protected readonly bestKey = bestKey;
+  protected readonly copied = signal(false);
   protected announcement = '';
+
+  /** Picker keys follow the current mode's records. */
+  protected readonly pickerKey = (layoutId: string, specials: boolean) =>
+    bestKey({ mode: this.store.mode(), layoutId, specials, date: undefined }) ?? '';
+
+  protected readonly configurable = computed(() => {
+    const mode = this.store.mode();
+    return mode === 'classic' || mode === 'timed' || mode === 'zen';
+  });
+
+  protected readonly clock = computed(() => {
+    const ms = this.store.timeLeft() ?? 0;
+    const total = Math.ceil(ms / 1000);
+    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+  });
+
+  protected readonly overTitle = computed(() => {
+    switch (this.store.endReason()) {
+      case 'time':
+        return 'Tempo esgotado!';
+      case 'moves':
+        return 'Acabaram os movimentos';
+      default:
+        return 'Fim de jogo';
+    }
+  });
+
+  protected readonly dailyLabel = computed(() => {
+    const date = this.store.date();
+    if (!date) return '';
+    const [y, m, d] = date.split('-');
+    return `${d}/${m}/${y}`;
+  });
+
+  constructor() {
+    // Timed mode clock; skips time while the tab is hidden.
+    let last = performance.now();
+    const timer = setInterval(() => {
+      const now = performance.now();
+      if (!this.document.hidden) this.store.tick(now - last);
+      last = now;
+    }, 200);
+    inject(DestroyRef).onDestroy(() => clearInterval(timer));
+  }
 
   protected onKey(event: KeyboardEvent): void {
     if (this.pickerOpen() || event.ctrlKey || event.metaKey || event.altKey) return;
@@ -67,7 +128,7 @@ export class GamePage {
       return;
     }
     if (key === 'r') {
-      this.store.newGame();
+      this.store.restart();
       return;
     }
     if (POWER_KEYS[key]) {
@@ -86,7 +147,7 @@ export class GamePage {
   }
 
   protected pickLayout(id: string): void {
-    this.store.newGame(id);
+    this.store.start({ layoutId: id });
     this.announcement = `Novo jogo: ${this.store.layout().name}.`;
   }
 
@@ -110,6 +171,17 @@ export class GamePage {
     if (!t) return '';
     if (t.power === 'remove') return 'Escolha a peça para remover.';
     return t.first === undefined ? 'Escolha a primeira peça para trocar.' : 'Agora escolha a segunda peça.';
+  }
+
+  protected async copyResult(): Promise<void> {
+    const text = `2048 · Desafio diário ${this.dailyLabel()}\n${this.store.score()} pontos · maior peça ${this.store.maxTile()} · ${this.store.moves()} movimentos`;
+    try {
+      await navigator.clipboard.writeText(text);
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    } catch {
+      this.announcement = text;
+    }
   }
 
   protected setSpecials(specials: boolean): void {

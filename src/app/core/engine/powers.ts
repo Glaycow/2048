@@ -1,4 +1,4 @@
-import { canMove } from './game';
+import { canMove, finalize } from './game';
 import { nextRandom } from './rng';
 import { GameState, PowerId, Powers, Tile } from './types';
 
@@ -26,7 +26,7 @@ function spend(state: GameState, id: PowerId, tiles: readonly Tile[], rngState =
     rngState,
     powers: { ...state.powers, [id]: state.powers[id] - 1 },
   };
-  return { ...next, over: !canMove(next) };
+  return finalize(next).state;
 }
 
 const clean = (t: Tile): Tile => {

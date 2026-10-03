@@ -46,4 +46,6 @@
     </button>
   }
 </div>
-<p class="recharge">+1 carga em cada poder em <strong>{{ nextRecharge() }}</strong> movimentos</p>
+@if (recharges()) {
+  <p class="recharge">+1 carga em cada poder em <strong>{{ nextRecharge() }}</strong> movimentos</p>
+}

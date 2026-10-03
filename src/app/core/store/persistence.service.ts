@@ -4,6 +4,7 @@ import { DEFAULT_LAYOUT_ID, GameState, getLayout, INITIAL_POWERS } from '../engi
 const STATE_KEY = 'g2048.state';
 const BEST_KEY = 'g2048.best';
 const PREFS_KEY = 'g2048.prefs';
+const PUZZLES_KEY = 'g2048.puzzles';
 
 export type BestScores = Readonly<Record<string, number>>;
 
@@ -24,6 +25,7 @@ export class PersistenceService {
       // Saves from before layouts existed are classic 4×4 games.
       const layout = getLayout(state.layoutId ?? DEFAULT_LAYOUT_ID);
       return {
+        mode: 'classic',
         layoutId: layout.id,
         blocked: layout.blocked,
         target: layout.target,
@@ -66,6 +68,19 @@ export class PersistenceService {
 
   savePrefs(prefs: Preferences): void {
     this.write(PREFS_KEY, JSON.stringify(prefs));
+  }
+
+  loadPuzzles(): Readonly<Record<string, number>> {
+    try {
+      const parsed: unknown = JSON.parse(this.read(PUZZLES_KEY) ?? '{}');
+      return parsed && typeof parsed === 'object' ? (parsed as Record<string, number>) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  savePuzzles(progress: Readonly<Record<string, number>>): void {
+    this.write(PUZZLES_KEY, JSON.stringify(progress));
   }
 
   private read(key: string): string | null {

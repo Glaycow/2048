@@ -19,6 +19,7 @@ function stateFrom(rows: number[][], overrides: Partial<GameState> = {}): GameSt
     }),
   );
   return {
+    mode: 'classic',
     layoutId: 'test',
     size,
     blocked,

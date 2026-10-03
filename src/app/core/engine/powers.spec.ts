@@ -16,6 +16,7 @@ function stateFrom(rows: number[][], overrides: Partial<GameState> = {}): GameSt
   const tiles: Tile[] = [];
   rows.forEach((cols, row) => cols.forEach((value, col) => value && tiles.push({ id: id++, value, row, col })));
   return {
+    mode: 'classic',
     layoutId: 'test',
     size: rows.length,
     blocked: [],
