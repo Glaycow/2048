@@ -18,6 +18,7 @@ import { TileComponent } from '../tile/tile';
 export class BoardComponent {
   readonly size = input.required<number>();
   readonly tiles = input.required<readonly Tile[]>();
+  readonly blocked = input<ReadonlySet<number>>(new Set());
   readonly ghostIds = input<ReadonlySet<number>>(new Set());
   readonly swipe = output<Direction>();
 

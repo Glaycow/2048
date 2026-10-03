@@ -2,7 +2,7 @@
   <div class="area">
     <div class="cells" aria-hidden="true">
       @for (cell of cells(); track cell) {
-        <div class="cell"></div>
+        <div class="cell" [class.blocked]="blocked().has(cell)"></div>
       }
     </div>
     @for (tile of tiles(); track tile.id) {
