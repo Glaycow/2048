@@ -2,8 +2,11 @@ import { computed, DestroyRef, effect, inject, Injectable, signal } from '@angul
 import {
   continueAfterWin,
   createGame,
+  DEFAULT_LAYOUT_ID,
   Direction,
   GameState,
+  getLayout,
+  LAYOUTS,
   move,
   randomSeed,
   Tile,
@@ -11,23 +14,27 @@ import {
 import { PersistenceService } from './persistence.service';
 
 export const SLIDE_MS = 110;
-const DEFAULT_SIZE = 4;
 
 @Injectable({ providedIn: 'root' })
 export class GameStore {
   private readonly persistence = inject(PersistenceService);
 
   private readonly state = signal<GameState>(
-    this.persistence.loadState() ?? createGame(DEFAULT_SIZE, randomSeed()),
+    this.persistence.loadState() ?? createGame(getLayout(DEFAULT_LAYOUT_ID), randomSeed()),
   );
   private readonly ghosts = signal<readonly Tile[]>([]);
   private ghostTimer?: ReturnType<typeof setTimeout>;
 
-  readonly best = signal(this.persistence.loadBest());
+  readonly layouts = LAYOUTS;
+  readonly bestByLayout = signal(this.persistence.loadBest());
   readonly lastGain = signal<{ value: number; key: number } | null>(null);
 
+  readonly layout = computed(() => getLayout(this.state().layoutId));
   readonly size = computed(() => this.state().size);
+  readonly blocked = computed(() => new Set(this.state().blocked));
+  readonly target = computed(() => this.state().target);
   readonly score = computed(() => this.state().score);
+  readonly best = computed(() => this.bestByLayout()[this.state().layoutId] ?? 0);
   readonly moves = computed(() => this.state().moves);
   readonly over = computed(() => this.state().over);
   readonly showWin = computed(() => this.state().won && !this.state().keepPlaying);
@@ -39,7 +46,7 @@ export class GameStore {
 
   constructor() {
     effect(() => this.persistence.saveState(this.state()));
-    effect(() => this.persistence.saveBest(this.best()));
+    effect(() => this.persistence.saveBest(this.bestByLayout()));
     inject(DestroyRef).onDestroy(() => clearTimeout(this.ghostTimer));
   }
 
@@ -54,14 +61,16 @@ export class GameStore {
     this.ghostTimer = setTimeout(() => this.ghosts.set([]), SLIDE_MS);
 
     if (result.gained > 0) this.lastGain.set({ value: result.gained, key: result.state.moves });
-    if (result.state.score > this.best()) this.best.set(result.state.score);
+    if (result.state.score > this.best()) {
+      this.bestByLayout.update((best) => ({ ...best, [result.state.layoutId]: result.state.score }));
+    }
   }
 
-  newGame(size = this.size()): void {
+  newGame(layoutId = this.state().layoutId): void {
     clearTimeout(this.ghostTimer);
     this.ghosts.set([]);
     this.lastGain.set(null);
-    this.state.set(createGame(size, randomSeed()));
+    this.state.set(createGame(getLayout(layoutId), randomSeed()));
   }
 
   keepPlaying(): void {

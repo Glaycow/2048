@@ -9,8 +9,20 @@ export interface Tile {
   readonly merged?: boolean;
 }
 
-export interface GameState {
+export interface BoardLayout {
+  readonly id: string;
+  readonly name: string;
   readonly size: number;
+  /** Cell indices (row * size + col) that tiles cannot occupy or cross. */
+  readonly blocked: readonly number[];
+  readonly target: number;
+}
+
+export interface GameState {
+  readonly layoutId: string;
+  readonly size: number;
+  readonly blocked: readonly number[];
+  readonly target: number;
   readonly tiles: readonly Tile[];
   readonly score: number;
   readonly moves: number;
@@ -28,5 +40,3 @@ export interface MoveResult {
   /** Tiles absorbed by a merge, positioned at the merge cell (for animation). */
   readonly consumed: readonly Tile[];
 }
-
-export const WIN_VALUE = 2048;

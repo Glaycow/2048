@@ -1,9 +1,12 @@
-import { canMove, spawnTile, toGrid } from './board';
-import { Direction, GameState, MoveResult, Tile, WIN_VALUE } from './types';
+import { canMove, isBlocked, spawnTile, toGrid } from './board';
+import { BoardLayout, Direction, GameState, MoveResult, Tile } from './types';
 
-export function createGame(size: number, seed: number): GameState {
+export function createGame(layout: BoardLayout, seed: number): GameState {
   const empty: GameState = {
-    size,
+    layoutId: layout.id,
+    size: layout.size,
+    blocked: layout.blocked,
+    target: layout.target,
     tiles: [],
     score: 0,
     moves: 0,
@@ -32,6 +35,16 @@ function lineCells(size: number, direction: Direction, index: number): [number, 
   });
 }
 
+/** Splits a line into runs of open cells; blocked cells act as walls. */
+function segments(state: GameState, cells: [number, number][]): [number, number][][] {
+  const runs: [number, number][][] = [[]];
+  for (const cell of cells) {
+    if (isBlocked(state, cell[0], cell[1])) runs.push([]);
+    else runs[runs.length - 1].push(cell);
+  }
+  return runs.filter((run) => run.length > 0);
+}
+
 export function move(state: GameState, direction: Direction): MoveResult {
   const { size } = state;
   const grid = toGrid(size, state.tiles);
@@ -42,27 +55,28 @@ export function move(state: GameState, direction: Direction): MoveResult {
   let moved = false;
 
   for (let index = 0; index < size; index++) {
-    const cells = lineCells(size, direction, index);
-    const line = cells.map(([r, c]) => grid[r][c]).filter((t): t is Tile => t !== null);
-    let target = 0;
+    for (const cells of segments(state, lineCells(size, direction, index))) {
+      const line = cells.map(([r, c]) => grid[r][c]).filter((t): t is Tile => t !== null);
+      let target = 0;
 
-    for (let k = 0; k < line.length; target++) {
-      const [row, col] = cells[target];
-      const current = line[k];
-      const next = line[k + 1];
+      for (let k = 0; k < line.length; target++) {
+        const [row, col] = cells[target];
+        const current = line[k];
+        const next = line[k + 1];
 
-      if (next && next.value === current.value) {
-        const value = current.value * 2;
-        tiles.push({ id: nextId++, value, row, col, merged: true });
-        consumed.push({ ...current, row, col, isNew: false, merged: false });
-        consumed.push({ ...next, row, col, isNew: false, merged: false });
-        gained += value;
-        moved = true;
-        k += 2;
-      } else {
-        if (current.row !== row || current.col !== col) moved = true;
-        tiles.push({ id: current.id, value: current.value, row, col });
-        k += 1;
+        if (next && next.value === current.value) {
+          const value = current.value * 2;
+          tiles.push({ id: nextId++, value, row, col, merged: true });
+          consumed.push({ ...current, row, col, isNew: false, merged: false });
+          consumed.push({ ...next, row, col, isNew: false, merged: false });
+          gained += value;
+          moved = true;
+          k += 2;
+        } else {
+          if (current.row !== row || current.col !== col) moved = true;
+          tiles.push({ id: current.id, value: current.value, row, col });
+          k += 1;
+        }
       }
     }
   }
@@ -75,12 +89,12 @@ export function move(state: GameState, direction: Direction): MoveResult {
     nextId,
     score: state.score + gained,
     moves: state.moves + 1,
-    won: state.won || tiles.some((t) => t.value >= WIN_VALUE),
+    won: state.won || tiles.some((t) => t.value >= state.target),
   };
   const next = spawnTile(afterMove);
 
   return {
-    state: { ...next, over: !canMove(size, next.tiles) },
+    state: { ...next, over: !canMove(next, next.tiles) },
     moved: true,
     gained,
     consumed,

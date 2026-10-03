@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { GameState } from '../engine';
+import { DEFAULT_LAYOUT_ID, GameState, getLayout } from '../engine';
 
 const STATE_KEY = 'g2048.state';
 const BEST_KEY = 'g2048.best';
+
+export type BestScores = Readonly<Record<string, number>>;
 
 @Injectable({ providedIn: 'root' })
 export class PersistenceService {
@@ -10,8 +12,16 @@ export class PersistenceService {
     const raw = this.read(STATE_KEY);
     if (!raw) return null;
     try {
-      const state = JSON.parse(raw) as GameState;
-      return Array.isArray(state.tiles) && typeof state.size === 'number' ? state : null;
+      const state = JSON.parse(raw) as Partial<GameState>;
+      if (!Array.isArray(state.tiles) || typeof state.size !== 'number') return null;
+      // Saves from before layouts existed are classic 4×4 games.
+      const layout = getLayout(state.layoutId ?? DEFAULT_LAYOUT_ID);
+      return {
+        layoutId: layout.id,
+        blocked: layout.blocked,
+        target: layout.target,
+        ...state,
+      } as GameState;
     } catch {
       return null;
     }
@@ -21,12 +31,20 @@ export class PersistenceService {
     this.write(STATE_KEY, JSON.stringify(state));
   }
 
-  loadBest(): number {
-    return Number(this.read(BEST_KEY)) || 0;
+  loadBest(): BestScores {
+    const raw = this.read(BEST_KEY);
+    if (!raw) return {};
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (typeof parsed === 'number') return { [DEFAULT_LAYOUT_ID]: parsed };
+      return parsed && typeof parsed === 'object' ? (parsed as BestScores) : {};
+    } catch {
+      return {};
+    }
   }
 
-  saveBest(best: number): void {
-    this.write(BEST_KEY, String(best));
+  saveBest(best: BestScores): void {
+    this.write(BEST_KEY, JSON.stringify(best));
   }
 
   private read(key: string): string | null {

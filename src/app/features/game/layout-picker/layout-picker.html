@@ -1,0 +1,34 @@
+<dialog #dialog aria-labelledby="layout-title" (click)="onBackdrop($event)" (close)="closed.emit()">
+  <div class="sheet">
+    <header>
+      <h2 id="layout-title">Escolha o tabuleiro</h2>
+      <button type="button" class="close" aria-label="Fechar" (click)="dialog.close()">✕</button>
+    </header>
+
+    <ul class="grid">
+      @for (layout of layouts(); track layout.id) {
+        <li>
+          <button
+            type="button"
+            class="option"
+            [class.active]="layout.id === current()"
+            [attr.aria-pressed]="layout.id === current()"
+            (click)="choose(layout.id)"
+          >
+            <span class="preview" [style.--n]="layout.size" aria-hidden="true">
+              @for (blocked of cells(layout); track $index) {
+                <i [class.blocked]="blocked"></i>
+              }
+            </span>
+            <span class="name">{{ layout.name }}</span>
+            <span class="meta">
+              <span>Meta {{ layout.target }}</span>
+              <span>Recorde {{ best()[layout.id] ?? 0 }}</span>
+            </span>
+          </button>
+        </li>
+      }
+    </ul>
+    <p class="note">Trocar de tabuleiro inicia um novo jogo.</p>
+  </div>
+</dialog>

@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Direction } from '../../core/engine';
 import { GameStore } from '../../core/store/game.store';
 import { BoardComponent } from './board/board';
+import { LayoutPickerComponent } from './layout-picker/layout-picker';
 import { ScoreComponent } from './score/score';
 
 const KEY_MAP: Record<string, Direction> = {
@@ -29,7 +30,7 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 @Component({
   selector: 'app-game-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [BoardComponent, ScoreComponent],
+  imports: [BoardComponent, ScoreComponent, LayoutPickerComponent],
   templateUrl: './game-page.html',
   styleUrl: './game-page.scss',
   host: {
@@ -38,10 +39,11 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 })
 export class GamePage {
   protected readonly store = inject(GameStore);
+  protected readonly pickerOpen = signal(false);
   protected announcement = '';
 
   protected onKey(event: KeyboardEvent): void {
-    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (this.pickerOpen() || event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key === 'r' || event.key === 'R') {
       this.store.newGame();
       return;
@@ -50,6 +52,16 @@ export class GamePage {
     if (!direction) return;
     event.preventDefault();
     this.play(direction);
+  }
+
+  protected openPicker(picker: LayoutPickerComponent): void {
+    this.pickerOpen.set(true);
+    picker.open();
+  }
+
+  protected pickLayout(id: string): void {
+    this.store.newGame(id);
+    this.announcement = `Novo jogo: ${this.store.layout().name}.`;
   }
 
   protected play(direction: Direction): void {
