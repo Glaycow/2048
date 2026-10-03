@@ -2,6 +2,8 @@
 
 2048 em Angular 22 (zoneless, signals) com tabuleiros variados, peças especiais, poderes e modos de jogo. Funciona offline (PWA).
 
+**Jogar:** https://2048-git-main-glaycows-projects.vercel.app
+
 ## Recursos
 
 - **Modos:** Clássico, Contra o tempo, Desafio diário, Puzzle e Zen
