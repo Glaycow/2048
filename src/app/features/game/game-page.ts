@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Direction } from '../../core/engine';
-import { GameStore } from '../../core/store/game.store';
+import { bestKey, GameStore } from '../../core/store/game.store';
 import { BoardComponent } from './board/board';
+import { LegendComponent } from './legend/legend';
 import { LayoutPickerComponent } from './layout-picker/layout-picker';
 import { ScoreComponent } from './score/score';
 
@@ -30,7 +31,7 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 @Component({
   selector: 'app-game-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [BoardComponent, ScoreComponent, LayoutPickerComponent],
+  imports: [BoardComponent, ScoreComponent, LayoutPickerComponent, LegendComponent],
   templateUrl: './game-page.html',
   styleUrl: './game-page.scss',
   host: {
@@ -40,6 +41,7 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 export class GamePage {
   protected readonly store = inject(GameStore);
   protected readonly pickerOpen = signal(false);
+  protected readonly bestKey = bestKey;
   protected announcement = '';
 
   protected onKey(event: KeyboardEvent): void {
@@ -62,6 +64,11 @@ export class GamePage {
   protected pickLayout(id: string): void {
     this.store.newGame(id);
     this.announcement = `Novo jogo: ${this.store.layout().name}.`;
+  }
+
+  protected setSpecials(specials: boolean): void {
+    this.store.setSpecials(specials);
+    this.announcement = specials ? 'Peças especiais ativadas.' : 'Peças especiais desativadas.';
   }
 
   protected play(direction: Direction): void {

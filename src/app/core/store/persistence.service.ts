@@ -3,8 +3,15 @@ import { DEFAULT_LAYOUT_ID, GameState, getLayout } from '../engine';
 
 const STATE_KEY = 'g2048.state';
 const BEST_KEY = 'g2048.best';
+const PREFS_KEY = 'g2048.prefs';
 
 export type BestScores = Readonly<Record<string, number>>;
+
+export interface Preferences {
+  readonly specials: boolean;
+}
+
+const DEFAULT_PREFS: Preferences = { specials: false };
 
 @Injectable({ providedIn: 'root' })
 export class PersistenceService {
@@ -20,6 +27,7 @@ export class PersistenceService {
         layoutId: layout.id,
         blocked: layout.blocked,
         target: layout.target,
+        specials: false,
         ...state,
       } as GameState;
     } catch {
@@ -45,6 +53,18 @@ export class PersistenceService {
 
   saveBest(best: BestScores): void {
     this.write(BEST_KEY, JSON.stringify(best));
+  }
+
+  loadPrefs(): Preferences {
+    try {
+      return { ...DEFAULT_PREFS, ...JSON.parse(this.read(PREFS_KEY) ?? '{}') };
+    } catch {
+      return DEFAULT_PREFS;
+    }
+  }
+
+  savePrefs(prefs: Preferences): void {
+    this.write(PREFS_KEY, JSON.stringify(prefs));
   }
 
   private read(key: string): string | null {

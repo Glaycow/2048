@@ -27,6 +27,17 @@
   --t-1024: #edc53f;
   --t-2048: #edc22e;
   --t-super: #3c3a32;
+
+  --bomb-bg: #ffe1cc;
+  --bomb-fg: #2b2620;
+  --spark: #ff7a1a;
+  --mult-bg: linear-gradient(135deg, #b46cf0, #f0609e);
+  --stone-bg: #8a8178;
+  --stone-fg: #5f5750;
+  --crack: #a49a90;
+  --ice-tint: rgb(120 190 255 / 30%);
+  --ice-edge: #8fd0ff;
+  --ice-badge: #3b9ae0;
 }
 
 @mixin dark {
@@ -56,6 +67,17 @@
   --t-1024: #f3c92e;
   --t-2048: #3ed6a6;
   --t-super: #0fb5e8;
+
+  --bomb-bg: #e9e4f7;
+  --bomb-fg: #17161c;
+  --spark: #ff8a3d;
+  --mult-bg: linear-gradient(135deg, #f09819, #ff512f);
+  --stone-bg: #4a4555;
+  --stone-fg: #6e687c;
+  --crack: #2a2733;
+  --ice-tint: rgb(120 200 255 / 28%);
+  --ice-edge: #7cc8ff;
+  --ice-badge: #2f8fd6;
 }
 
 @media (prefers-color-scheme: dark) {

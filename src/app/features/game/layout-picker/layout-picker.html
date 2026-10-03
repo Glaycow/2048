@@ -1,10 +1,20 @@
 <dialog #dialog aria-labelledby="layout-title" (click)="onBackdrop($event)" (close)="closed.emit()">
   <div class="sheet">
     <header>
-      <h2 id="layout-title">Escolha o tabuleiro</h2>
+      <h2 id="layout-title">Configurar jogo</h2>
       <button type="button" class="close" aria-label="Fechar" (click)="dialog.close()">✕</button>
     </header>
 
+    <label class="switch">
+      <input type="checkbox" role="switch" [checked]="specials()" (change)="toggleSpecials($event)" />
+      <span class="track" aria-hidden="true"></span>
+      <span class="text">
+        <strong>Peças especiais</strong>
+        <small>Bomba, gelo, multiplicador e pedra</small>
+      </span>
+    </label>
+
+    <h3>Tabuleiro</h3>
     <ul class="grid">
       @for (layout of layouts(); track layout.id) {
         <li>
@@ -23,12 +33,12 @@
             <span class="name">{{ layout.name }}</span>
             <span class="meta">
               <span>Meta {{ layout.target }}</span>
-              <span>Recorde {{ best()[layout.id] ?? 0 }}</span>
+              <span>Recorde {{ best()[bestKey()(layout.id, specials())] ?? 0 }}</span>
             </span>
           </button>
         </li>
       }
     </ul>
-    <p class="note">Trocar de tabuleiro inicia um novo jogo.</p>
+    <p class="note">Alterar as opções inicia um novo jogo.</p>
   </div>
 </dialog>

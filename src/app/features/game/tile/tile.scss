@@ -24,6 +24,7 @@
 }
 
 .face {
+  position: relative;
   display: grid;
   place-items: center;
   width: 100%;
@@ -81,6 +82,114 @@
 :host([data-value='1024']) { --tile-bg: var(--t-1024); --tile-fg: var(--fg-light); --glow: 0.3; }
 :host([data-value='2048']) { --tile-bg: var(--t-2048); --tile-fg: var(--fg-light); --glow: 0.4; }
 :host([data-value='4096']) { --tile-bg: var(--t-super); --tile-fg: var(--fg-light); --glow: 0.4; }
+
+/* Special tiles */
+
+:host([data-kind='bomb']) {
+  --tile-bg: var(--bomb-bg);
+  --tile-fg: var(--bomb-fg);
+}
+
+:host([data-kind='bomb']) .face {
+  animation: tremble 1.4s ease-in-out infinite;
+}
+
+:host([data-kind='multiplier']) {
+  --tile-bg: var(--mult-bg);
+  --tile-fg: var(--fg-light);
+  --glow: 0.25;
+}
+
+:host([data-kind='stone']) {
+  --tile-bg: var(--stone-bg);
+  --tile-fg: var(--stone-fg);
+}
+
+:host([data-kind='stone']) .face {
+  box-shadow: inset 0 calc(var(--cell) * -0.06) 0 rgb(0 0 0 / 20%);
+}
+
+.icon {
+  width: 62%;
+  height: 62%;
+}
+
+.mult {
+  font-size: calc(var(--cell) * 0.42);
+  font-style: italic;
+  letter-spacing: -0.04em;
+}
+
+.badge {
+  position: absolute;
+  top: 6%;
+  right: 6%;
+  display: grid;
+  place-items: center;
+  min-width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: calc(var(--cell) * 0.2);
+  font-weight: 800;
+}
+
+.badge.ice {
+  background: var(--ice-badge);
+}
+
+:host(.frozen) .face {
+  outline: calc(var(--cell) * 0.05) solid var(--ice-edge);
+  outline-offset: calc(var(--cell) * -0.05);
+}
+
+.frost {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 45%) 0 14%, transparent 14% 40%, rgb(255 255 255 / 25%) 40% 45%, transparent 45%),
+    var(--ice-tint);
+  pointer-events: none;
+}
+
+.num {
+  position: relative;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+}
+
+:host(.exploding) {
+  z-index: 4;
+  transition: none;
+}
+
+:host(.exploding) .face {
+  animation: blast 420ms ease-out forwards;
+}
+
+@keyframes tremble {
+  0%, 80%, 100% { transform: rotate(0); }
+  85% { transform: rotate(-4deg); }
+  90% { transform: rotate(4deg); }
+  95% { transform: rotate(-2deg); }
+}
+
+@keyframes blast {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  30% {
+    transform: scale(1.25);
+    filter: brightness(2.2);
+    box-shadow: 0 0 calc(var(--cell) * 0.6) var(--spark);
+  }
+  100% {
+    transform: scale(0.2) rotate(25deg);
+    opacity: 0;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   :host {

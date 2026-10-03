@@ -1,4 +1,5 @@
 import { nextRandom } from './rng';
+import { SPECIALS_FROM_MOVE, specialize } from './specials';
 import { GameState, Tile } from './types';
 
 export type Grid = (Tile | null)[][];
@@ -29,30 +30,17 @@ export function emptyCells(shape: BoardShape, tiles: readonly Tile[]): [row: num
   return cells;
 }
 
-export function canMove(shape: BoardShape, tiles: readonly Tile[]): boolean {
-  if (emptyCells(shape, tiles).length > 0) return true;
-  const { size } = shape;
-  const grid = toGrid(size, tiles);
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      const value = grid[row][col]?.value;
-      if (value === undefined) continue;
-      if (col + 1 < size && grid[row][col + 1]?.value === value) return true;
-      if (row + 1 < size && grid[row + 1][col]?.value === value) return true;
-    }
-  }
-  return false;
-}
-
-/** Spawns a 2 (90%) or 4 (10%) on a random empty cell. */
+/** Spawns a 2 (90%) or 4 (10%) on a random empty cell, possibly as a special tile. */
 export function spawnTile(state: GameState): GameState {
   const cells = emptyCells(state, state.tiles);
   if (cells.length === 0) return state;
 
   const [pick, s1] = nextRandom(state.rngState);
   const [roll, s2] = nextRandom(s1);
+  const [special, s3] = nextRandom(s2);
   const [row, col] = cells[Math.floor(pick * cells.length)];
-  const tile: Tile = { id: state.nextId, value: roll < 0.9 ? 2 : 4, row, col, isNew: true };
+  let tile: Tile = { id: state.nextId, value: roll < 0.9 ? 2 : 4, row, col, isNew: true };
+  if (state.specials && state.moves >= SPECIALS_FROM_MOVE) tile = specialize(tile, special, state.tiles);
 
-  return { ...state, tiles: [...state.tiles, tile], nextId: state.nextId + 1, rngState: s2 };
+  return { ...state, tiles: [...state.tiles, tile], nextId: state.nextId + 1, rngState: s3 };
 }

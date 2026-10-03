@@ -18,7 +18,10 @@ export class LayoutPickerComponent {
   readonly layouts = input.required<readonly BoardLayout[]>();
   readonly current = input.required<string>();
   readonly best = input<Readonly<Record<string, number>>>({});
+  readonly specials = input(false);
+  readonly bestKey = input.required<(layoutId: string, specials: boolean) => string>();
   readonly pick = output<string>();
+  readonly specialsChange = output<boolean>();
   readonly closed = output<void>();
 
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
@@ -30,6 +33,10 @@ export class LayoutPickerComponent {
   protected choose(id: string): void {
     this.dialog().nativeElement.close();
     this.pick.emit(id);
+  }
+
+  protected toggleSpecials(event: Event): void {
+    this.specialsChange.emit((event.target as HTMLInputElement).checked);
   }
 
   protected cells(layout: BoardLayout): boolean[] {

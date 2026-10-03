@@ -11,7 +11,7 @@
     <p class="hint">Junte as peças e chegue ao <strong>{{ store.target() }}!</strong></p>
     <div class="actions">
       <button type="button" class="btn ghost" (click)="openPicker(picker)" aria-haspopup="dialog">
-        {{ store.layout().name }}
+        {{ store.layout().name }}@if (store.specials()) {<span class="spark" title="Peças especiais"> ✦</span>}
       </button>
       <button type="button" class="btn" (click)="store.newGame()">Novo jogo</button>
     </div>
@@ -42,12 +42,19 @@
     }
   </app-board>
 
+  @if (store.specials()) {
+    <app-legend />
+  }
+
   <p class="help">Use as <strong>setas</strong>, <strong>WASD</strong> ou deslize. <strong>R</strong> reinicia.</p>
   <app-layout-picker
     #picker
     [layouts]="store.layouts"
     [current]="store.layout().id"
     [best]="store.bestByLayout()"
+    [specials]="store.prefs().specials"
+    [bestKey]="bestKey"
+    (specialsChange)="setSpecials($event)"
     (pick)="pickLayout($event)"
     (closed)="pickerOpen.set(false)"
   />
