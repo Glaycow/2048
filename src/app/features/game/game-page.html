@@ -1,0 +1,41 @@
+<main class="game">
+  <header class="top">
+    <h1 class="logo">2048</h1>
+    <div class="scores">
+      <app-score label="Pontos" [value]="store.score()" [gain]="store.lastGain()" />
+      <app-score label="Recorde" [value]="store.best()" />
+    </div>
+  </header>
+
+  <div class="bar">
+    <p class="hint">Junte as peças e chegue ao <strong>2048!</strong></p>
+    <button type="button" class="btn" (click)="store.newGame()">Novo jogo</button>
+  </div>
+
+  <app-board
+    [size]="store.size()"
+    [tiles]="store.tiles()"
+    [ghostIds]="store.ghostIds()"
+    (swipe)="play($event)"
+    aria-label="Tabuleiro do jogo"
+  >
+    @if (store.showWin()) {
+      <div class="overlay win" role="dialog" aria-label="Vitória">
+        <p class="title">Você venceu!</p>
+        <div class="actions">
+          <button type="button" class="btn" (click)="store.keepPlaying()">Continuar</button>
+          <button type="button" class="btn ghost" (click)="store.newGame()">Novo jogo</button>
+        </div>
+      </div>
+    } @else if (store.over()) {
+      <div class="overlay" role="dialog" aria-label="Fim de jogo">
+        <p class="title">Fim de jogo</p>
+        <p class="stats">{{ store.score() }} pontos · {{ store.moves() }} movimentos · maior peça {{ store.maxTile() }}</p>
+        <button type="button" class="btn" (click)="store.newGame()">Tentar novamente</button>
+      </div>
+    }
+  </app-board>
+
+  <p class="help">Use as <strong>setas</strong>, <strong>WASD</strong> ou deslize. <strong>R</strong> reinicia.</p>
+  <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+</main>

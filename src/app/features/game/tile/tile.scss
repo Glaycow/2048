@@ -1,0 +1,92 @@
+:host {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: var(--cell);
+  height: var(--cell);
+  transform: translate(
+    calc(var(--col) * (var(--cell) + var(--gap))),
+    calc(var(--row) * (var(--cell) + var(--gap)))
+  );
+  transition: transform var(--slide) ease-in-out;
+  --tile-bg: var(--t-2);
+  --tile-fg: var(--fg-dark);
+  --font: calc(var(--cell) * 0.45);
+}
+
+:host(.ghost) {
+  z-index: 1;
+}
+
+:host(.merged) {
+  z-index: 3;
+}
+
+.face {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--gap) * 0.6);
+  background: var(--tile-bg);
+  color: var(--tile-fg);
+  font-weight: 800;
+  font-size: var(--font);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 calc(var(--cell) * var(--glow, 0)) var(--tile-bg);
+  user-select: none;
+}
+
+:host(.new) .face {
+  animation: appear 180ms ease-out var(--slide) backwards;
+}
+
+:host(.merged) .face {
+  animation: pop 200ms ease-out var(--slide) backwards;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+:host([data-digits='3']) { --font: calc(var(--cell) * 0.38); }
+:host([data-digits='4']) { --font: calc(var(--cell) * 0.3); }
+:host([data-digits='5']) { --font: calc(var(--cell) * 0.24); }
+
+:host([data-value='4']) { --tile-bg: var(--t-4); }
+:host([data-value='8']) { --tile-bg: var(--t-8); --tile-fg: var(--fg-light); }
+:host([data-value='16']) { --tile-bg: var(--t-16); --tile-fg: var(--fg-light); }
+:host([data-value='32']) { --tile-bg: var(--t-32); --tile-fg: var(--fg-light); }
+:host([data-value='64']) { --tile-bg: var(--t-64); --tile-fg: var(--fg-light); }
+:host([data-value='128']) { --tile-bg: var(--t-128); --tile-fg: var(--fg-light); --glow: 0.15; }
+:host([data-value='256']) { --tile-bg: var(--t-256); --tile-fg: var(--fg-light); --glow: 0.2; }
+:host([data-value='512']) { --tile-bg: var(--t-512); --tile-fg: var(--fg-light); --glow: 0.25; }
+:host([data-value='1024']) { --tile-bg: var(--t-1024); --tile-fg: var(--fg-light); --glow: 0.3; }
+:host([data-value='2048']) { --tile-bg: var(--t-2048); --tile-fg: var(--fg-light); --glow: 0.4; }
+:host([data-value='4096']) { --tile-bg: var(--t-super); --tile-fg: var(--fg-light); --glow: 0.4; }
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+  .face {
+    animation: none !important;
+  }
+}
